@@ -1,0 +1,1220 @@
+================================================================
+MASTER CODEX PROMPT + PROJECT DOCUMENTATION
+DESIGN AND IMPLEMENTATION OF AN AUTOMATED ONLINE EVENT
+REGISTRATION AND MANAGEMENT SYSTEM
+Academic Final Year Project — Delta State Polytechnic, Otefe-Oghara
+Approved by: Dr. Elugwa Felix | Date: 1/6/26
+================================================================
+
+================================================================
+SECTION A: PROJECT DOCUMENTATION
+================================================================
+
+PROJECT TITLE
+-------------
+Design and Implementation of an Automated Online Event Registration
+and Management System
+
+ABSTRACT
+--------
+This project presents the design and implementation of an Online
+Event Registration and Management System that allows users to
+register for events through a web-based platform. The system enables
+event organizers to create events, manage participant registrations,
+and generate attendance reports. Participants can view available
+events and complete registration online. The system is expected to
+improve efficiency, reduce paperwork, and provide a convenient means
+of managing event-planning related activities.
+
+TECH STACK
+----------
+Layer           | Technology
+----------------|------------------------------------------
+Frontend        | React.js (Vite) + Tailwind CSS
+Backend         | Node.js + Express.js
+Database        | MongoDB (Mongoose ODM)
+Authentication  | JWT (JSON Web Tokens) + bcryptjs
+Email Service   | Nodemailer (confirmations, reminders, OTPs)
+PDF Generation  | pdfkit (reports, tickets, certificates)
+File Uploads    | Multer (event banners, profile photos)
+Scheduling      | node-cron (reminder emails, auto-close events)
+Charts          | Recharts (dashboard analytics)
+Environment     | dotenv
+Form Handling   | react-hook-form
+Notifications   | react-hot-toast
+Icons           | @heroicons/react
+HTTP Client     | Axios
+
+WHY THIS STACK?
+---------------
+- React + Vite: Fast build times, component reuse, modern hooks-
+  based architecture ideal for dynamic event listings and forms.
+- Node + Express: Lightweight, fast REST API development with a
+  large ecosystem of middleware.
+- MongoDB: Flexible document model suits event data which varies
+  greatly — some events have tickets, some are free, some have
+  capacity limits, others are open. No rigid schema needed.
+- JWT: Stateless authentication suitable for a web platform where
+  multiple user types (Admin, Organizer, Participant) need different
+  access levels without session storage on the server.
+- Nodemailer: Handles transactional emails (confirmations, OTPs,
+  reminders) — critical for event management workflows.
+- node-cron: Automates time-sensitive tasks like sending event
+  reminder emails 24 hours before an event starts, or automatically
+  closing registration when capacity is reached or deadline passes.
+
+WHAT EACH FEATURE DOES
+-----------------------
+
+1. EVENT CREATION (Organizer/Admin)
+   Organizers create events by filling a detailed form: event name,
+   description, category, location (physical address or online link),
+   date and time, registration deadline, maximum capacity, ticket
+   price (or mark as Free), and upload a banner image. Once created,
+   the event appears in the public event listing for participants to
+   discover and register for.
+
+2. EVENT LISTING (Public / Participants)
+   A searchable, filterable catalogue of all upcoming and ongoing
+   events. Participants can browse by category, date, location type
+   (physical/virtual), and price (free/paid). Each event card shows
+   the banner, title, date, location, available slots, and a
+   Register button.
+
+3. PARTICIPANT REGISTRATION
+   Participants register for an event by filling a form: full name,
+   email, phone number, and any custom fields set by the organizer.
+   After submission, the system checks capacity, validates inputs,
+   generates a unique Registration Code, and sends a confirmation
+   email with a PDF ticket attachment. Registration is blocked when
+   the event is full or the registration deadline has passed.
+
+4. REGISTRATION MANAGEMENT (Organizer/Admin)
+   Organizers can view the full list of participants registered for
+   their event, search/filter by name or status, mark attendance
+   (present/absent) on the event day, export the participant list
+   as a PDF or CSV, and send bulk email messages to all registrants.
+
+5. ATTENDANCE TRACKING
+   On the event day, the organizer marks each participant as Present
+   or Absent from the participant list. This updates the participant's
+   attendance status in real time. Post-event, the organizer can
+   generate an attendance summary report showing total registered,
+   total present, total absent, and attendance percentage.
+
+6. AUTOMATED EMAIL NOTIFICATIONS
+   - Registration Confirmation: sent immediately after successful
+     registration, includes Registration Code and PDF ticket.
+   - Event Reminder: sent automatically 24 hours before event start
+     via node-cron.
+   - Capacity Alert: sent to organizer when an event reaches 80%
+     and 100% capacity.
+   - Event Cancellation Notice: sent to all registrants if event
+     is cancelled.
+   - Waitlist Notification: sent when a slot opens up and a
+     waitlisted participant is moved to confirmed.
+
+7. WAITLIST SYSTEM
+   When an event reaches maximum capacity, new registrations are
+   placed on a waitlist. If a confirmed participant cancels, the
+   first waitlisted participant is automatically moved to confirmed
+   status and receives a confirmation email.
+
+8. ADMIN DASHBOARD
+   Displays system-wide statistics: total events, total registrations,
+   upcoming events today, events by category chart, monthly
+   registration trend chart, and recent activity. Admin can manage
+   all users, all events, view all registrations, and generate
+   system-wide reports.
+
+9. ORGANIZER DASHBOARD
+   Displays the organizer's own events: total events created, total
+   registrations across all their events, upcoming events, and
+   average attendance rate. Quick links to create event, view
+   registrations, and mark attendance.
+
+10. PARTICIPANT DASHBOARD (My Events)
+    Participants see their registered events: upcoming registrations
+    with countdown timers, past events they attended, and their
+    registration history. They can cancel a registration (before
+    the cancellation deadline) and download their ticket PDF.
+
+11. REPORTS AND ANALYTICS (Admin/Organizer)
+    - Event Registration Report: participant list, registration dates,
+      attendance status — exportable as PDF.
+    - Attendance Summary: present vs absent breakdown per event.
+    - System Overview Report: all events, registration counts, and
+      revenue (for paid events) — Admin only.
+    - Monthly trends: bar charts for registrations over time.
+
+12. ROLE-BASED ACCESS CONTROL
+    Three roles: Admin (full system access), Organizer (manage own
+    events and registrations), Participant (register, view own
+    events). Each role sees a different dashboard, sidebar, and has
+    access to different API endpoints.
+
+13. AUDIT LOGGING
+    Every significant action (event created, registration submitted,
+    attendance marked, event cancelled) is logged with the user's ID,
+    IP address, action description, and timestamp. Admin can view
+    the full audit trail.
+
+HOW TO RUN THE PROJECT
+----------------------
+
+Prerequisites:
+  - Node.js v18 or higher
+  - MongoDB v6 or higher (local or MongoDB Atlas)
+  - npm v9 or higher
+  - Git
+
+Step 1 — Clone or open the project folder:
+  cd event-registration-system
+
+Step 2 — Set up the backend:
+  cd server
+  npm install
+  Copy .env.example to .env and fill in your values (see below)
+  npm run dev   (starts with nodemon on port 5000)
+
+Step 3 — Set up the frontend:
+  cd ../client
+  npm install
+  npm run dev   (starts Vite dev server on port 5173)
+
+Step 4 — Open browser:
+  http://localhost:5173
+
+Step 5 — Login with seeded credentials:
+  Admin       : admin@events.com       / Admin@1234
+  Organizer   : organizer@events.com   / Org@1234
+  Participant : participant@events.com / Part@1234
+
+ENVIRONMENT VARIABLES (.env)
+-----------------------------
+PORT=5000
+NODE_ENV=development
+MONGO_URI=mongodb://localhost:27017/event_registration_db
+JWT_SECRET=your_super_secret_jwt_key_here
+JWT_EXPIRES_IN=8h
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=youremail@gmail.com
+EMAIL_PASS=your_gmail_app_password
+EMAIL_FROM=EventSystem <youremail@gmail.com>
+CLIENT_URL=http://localhost:5173
+PLATFORM_NAME=EventHub
+PLATFORM_TAGLINE=Register. Attend. Connect.
+
+FOLDER STRUCTURE EXPLANATION
+-----------------------------
+event-registration-system/
+  client/           React frontend (Vite)
+    src/
+      api/          Axios instance + all API call functions
+      assets/       Logo, placeholder event banner image
+      components/
+        common/     Reusable UI: Button, Input, Modal, Badge,
+                    Spinner, Table, Pagination, ConfirmDialog,
+                    SearchInput, CountdownTimer
+        layout/     Navbar, Sidebar, PageWrapper, AuthLayout
+        features/   EventCard, TicketCard, ParticipantRow,
+                    AttendanceBadge, RegistrationForm
+      context/      AuthContext (user, role, token)
+      hooks/        useAuth, useFetch, useSearch, useCountdown
+      pages/
+        auth/       Login, Register (participant self-signup),
+                    ForgotPassword, ResetPassword
+        admin/      Dashboard, UserManagement, AllEvents,
+                    AllRegistrations, Reports, AuditLogs, Settings
+        organizer/  Dashboard, MyEvents, CreateEvent, EditEvent,
+                    EventDetail, Registrations, MarkAttendance
+        participant/ Dashboard, BrowseEvents, EventDetail,
+                    MyRegistrations, MyTicket
+      routes/       ProtectedRoute, RoleRoute, AppRoutes
+      utils/        formatDate, formatCurrency, formatDateTime,
+                    eventStatus, validators, constants
+  server/           Node.js + Express backend
+    config/         db.js (MongoDB), email.js (Nodemailer)
+    controllers/    authController, eventController,
+                    registrationController, userController,
+                    categoryController, reportController
+    middleware/     authMiddleware, roleMiddleware,
+                    errorMiddleware, uploadMiddleware
+    models/         User, Event, Category, Registration,
+                    Waitlist, AuditLog, Settings
+    routes/         authRoutes, eventRoutes, registrationRoutes,
+                    userRoutes, categoryRoutes, reportRoutes
+    utils/          generateToken, generateRegCode,
+                    generateTicketNo, pdfGenerator, calcEventStatus
+    jobs/           reminderScheduler (node-cron)
+    uploads/        Multer destination (event banners, photos)
+    seedData.js     Initial data population
+
+================================================================
+SECTION B: CODEX GENERATION PROMPT
+================================================================
+
+PROJECT OVERVIEW FOR CODEX
+---------------------------
+Build a full-stack web-based Automated Online Event Registration
+and Management System. Three user roles: Admin, Organizer, and
+Participant. Organizers create and manage events. Participants
+discover and register for events online. Admins oversee the entire
+platform. The system automates confirmation emails, reminder
+notifications, waitlist management, attendance tracking, and
+report generation.
+
+Tech Stack: React.js (Vite) + Tailwind CSS + Node.js + Express.js
++ MongoDB (Mongoose) + JWT + bcryptjs + Nodemailer + pdfkit +
+Multer + node-cron + Recharts
+
+================================================================
+COLOR PALETTE
+================================================================
+
+Use these exact values in tailwind.config.js under extend.colors:
+
+primary:
+  DEFAULT : #6C3BAA   (Deep Event Purple — main brand color)
+  light   : #8B5CC8   (hover/active states)
+  dark    : #431E7A   (sidebar, navbar background)
+  pale    : #F0EBFA   (card fills, table header tints)
+
+accent:
+  DEFAULT : #E8472A   (Vibrant Event Red-Orange — CTAs)
+  light   : #FDECEA   (badge backgrounds)
+  dark    : #B83520   (hover)
+
+success:
+  DEFAULT : #16A34A
+  light   : #DCFCE7
+
+warning:
+  DEFAULT : #D97706
+  light   : #FEF3C7
+
+neutral:
+  50  : #FAFAFA
+  100 : #F4F4F5
+  200 : #E4E4E7
+  300 : #D1D1D6
+  400 : #A0A0AB
+  500 : #71717A
+  600 : #52525B
+  700 : #3F3F46
+  800 : #27272A
+  900 : #18181B
+
+status:
+  upcoming   : #0891B2   (info blue)
+  ongoing    : #16A34A   (green)
+  past       : #71717A   (neutral gray)
+  cancelled  : #DC2626   (red)
+  full       : #D97706   (amber)
+  draft      : #A0A0AB   (light gray)
+  confirmed  : #16A34A
+  waitlisted : #D97706
+  cancelled_reg: #DC2626
+  attended   : #16A34A
+  absent     : #DC2626
+
+DESIGN RULES:
+  Navbar/Sidebar background : primary.dark (#431E7A)
+  Page background           : neutral.50 (#FAFAFA)
+  Cards                     : white, neutral.200 border, soft shadow
+  Primary buttons           : accent.DEFAULT (#E8472A) with white text
+  Secondary buttons         : white with primary.DEFAULT border
+  Danger buttons            : #DC2626
+  Table header rows         : primary.pale (#F0EBFA)
+  Active sidebar item       : primary.light with white text
+  Event cards               : white with primary.pale left border accent
+  Full event badge          : warning background
+  Cancelled event badge     : danger background
+  Hero section gradient     : from primary.dark to primary.DEFAULT
+
+================================================================
+FOLDER STRUCTURE
+================================================================
+
+event-registration-system/
+├── client/
+│   ├── public/
+│   ├── src/
+│   │   ├── api/
+│   │   │   ├── axiosInstance.js
+│   │   │   └── index.js
+│   │   ├── assets/
+│   │   ├── components/
+│   │   │   ├── common/
+│   │   │   │   ├── Button.jsx
+│   │   │   │   ├── Input.jsx
+│   │   │   │   ├── Modal.jsx
+│   │   │   │   ├── Badge.jsx
+│   │   │   │   ├── Spinner.jsx
+│   │   │   │   ├── Table.jsx
+│   │   │   │   ├── Pagination.jsx
+│   │   │   │   ├── ConfirmDialog.jsx
+│   │   │   │   ├── SearchInput.jsx
+│   │   │   │   └── CountdownTimer.jsx
+│   │   │   ├── layout/
+│   │   │   │   ├── Navbar.jsx
+│   │   │   │   ├── Sidebar.jsx
+│   │   │   │   ├── PageWrapper.jsx
+│   │   │   │   └── AuthLayout.jsx
+│   │   │   └── features/
+│   │   │       ├── EventCard.jsx
+│   │   │       ├── TicketCard.jsx
+│   │   │       ├── ParticipantRow.jsx
+│   │   │       └── AttendanceBadge.jsx
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx
+│   │   ├── hooks/
+│   │   │   ├── useAuth.js
+│   │   │   ├── useFetch.js
+│   │   │   ├── useSearch.js
+│   │   │   └── useCountdown.js
+│   │   ├── pages/
+│   │   │   ├── auth/
+│   │   │   │   ├── Login.jsx
+│   │   │   │   ├── Register.jsx
+│   │   │   │   ├── ForgotPassword.jsx
+│   │   │   │   └── ResetPassword.jsx
+│   │   │   ├── admin/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── UserManagement.jsx
+│   │   │   │   ├── AllEvents.jsx
+│   │   │   │   ├── AllRegistrations.jsx
+│   │   │   │   ├── Reports.jsx
+│   │   │   │   ├── AuditLogs.jsx
+│   │   │   │   └── Settings.jsx
+│   │   │   ├── organizer/
+│   │   │   │   ├── Dashboard.jsx
+│   │   │   │   ├── MyEvents.jsx
+│   │   │   │   ├── CreateEvent.jsx
+│   │   │   │   ├── EditEvent.jsx
+│   │   │   │   ├── EventDetail.jsx
+│   │   │   │   ├── Registrations.jsx
+│   │   │   │   └── MarkAttendance.jsx
+│   │   │   └── participant/
+│   │   │       ├── Dashboard.jsx
+│   │   │       ├── BrowseEvents.jsx
+│   │   │       ├── EventDetail.jsx
+│   │   │       ├── RegisterForEvent.jsx
+│   │   │       ├── MyRegistrations.jsx
+│   │   │       └── MyTicket.jsx
+│   │   ├── routes/
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── RoleRoute.jsx
+│   │   │   └── AppRoutes.jsx
+│   │   ├── utils/
+│   │   │   ├── formatDate.js
+│   │   │   ├── formatCurrency.js
+│   │   │   ├── eventStatus.js
+│   │   │   └── validators.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── index.html
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── server/
+│   ├── config/
+│   │   ├── db.js
+│   │   └── email.js
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   ├── eventController.js
+│   │   ├── registrationController.js
+│   │   ├── categoryController.js
+│   │   ├── userController.js
+│   │   └── reportController.js
+│   ├── middleware/
+│   │   ├── authMiddleware.js
+│   │   ├── roleMiddleware.js
+│   │   ├── errorMiddleware.js
+│   │   └── uploadMiddleware.js
+│   ├── models/
+│   │   ├── User.js
+│   │   ├── Event.js
+│   │   ├── Category.js
+│   │   ├── Registration.js
+│   │   ├── Waitlist.js
+│   │   ├── AuditLog.js
+│   │   └── Settings.js
+│   ├── routes/
+│   │   ├── authRoutes.js
+│   │   ├── eventRoutes.js
+│   │   ├── registrationRoutes.js
+│   │   ├── categoryRoutes.js
+│   │   ├── userRoutes.js
+│   │   └── reportRoutes.js
+│   ├── utils/
+│   │   ├── generateToken.js
+│   │   ├── generateRegCode.js
+│   │   ├── generateTicketNo.js
+│   │   ├── calcEventStatus.js
+│   │   └── pdfGenerator.js
+│   ├── jobs/
+│   │   └── reminderScheduler.js
+│   ├── uploads/
+│   ├── seedData.js
+│   ├── .env
+│   └── server.js
+│
+├── .gitignore
+└── README.md
+
+================================================================
+DATABASE MODELS
+================================================================
+
+--- User.js ---
+fullName         : String, required
+email            : String, required, unique
+password         : String, required (bcrypt hashed)
+role             : enum ['admin','organizer','participant'], required
+phone            : String
+organization     : String (for organizers — company/dept name)
+bio              : String (organizer bio shown on event pages)
+profileImage     : String (file path)
+isActive         : Boolean, default true
+isEmailVerified  : Boolean, default false
+emailVerifyToken : String
+resetToken       : String
+resetTokenExpiry : Date
+timestamps       : true
+
+--- Category.js ---
+name             : String, required, unique
+description      : String
+icon             : String (emoji or icon name, e.g. "🎓")
+color            : String (hex color for category badge)
+createdBy        : ObjectId ref User
+timestamps       : true
+
+--- Event.js ---
+eventCode        : String, unique, auto-generated (EVT-YYYY-NNNNN)
+title            : String, required
+description      : String, required
+category         : ObjectId ref Category, required
+organizer        : ObjectId ref User, required
+eventType        : enum ['Physical','Virtual','Hybrid'], required
+location         : String (address or "Online")
+virtualLink      : String (Zoom/Meet link if Virtual/Hybrid)
+bannerImage      : String (file path)
+startDate        : Date, required
+endDate          : Date, required
+startTime        : String (e.g. "10:00 AM")
+endTime          : String (e.g. "04:00 PM")
+registrationDeadline : Date, required
+maxCapacity      : Number, required
+currentRegistrations : Number, default 0
+isFree           : Boolean, default true
+ticketPrice      : Number, default 0
+allowWaitlist    : Boolean, default true
+status           : enum ['Draft','Published','Cancelled','Completed'],
+                   default 'Draft'
+cancellationReason : String
+tags             : [String]
+customFields     : [{ fieldName: String, fieldType: String,
+                      isRequired: Boolean }]
+                   (organizer can add extra registration form fields)
+createdBy        : ObjectId ref User
+timestamps       : true
+
+--- Registration.js ---
+registrationCode : String, unique, auto-generated (REG-YYYYNNNNN)
+ticketNumber     : String, unique, auto-generated (TKT-XXXXXX)
+event            : ObjectId ref Event, required
+participant      : ObjectId ref User (null if guest registration)
+fullName         : String, required
+email            : String, required
+phone            : String
+organization     : String
+customFieldValues: [{ fieldName: String, value: String }]
+status           : enum ['Confirmed','Waitlisted','Cancelled'],
+                   default 'Confirmed'
+attendanceStatus : enum ['Pending','Present','Absent'],
+                   default 'Pending'
+registrationDate : Date, default Date.now
+cancelledAt      : Date
+cancellationReason : String
+checkedInBy      : ObjectId ref User
+checkedInAt      : Date
+timestamps       : true
+
+--- Waitlist.js ---
+event            : ObjectId ref Event, required
+fullName         : String, required
+email            : String, required
+phone            : String
+organization     : String
+customFieldValues: [{ fieldName: String, value: String }]
+joinedAt         : Date, default Date.now
+position         : Number (queue position)
+notified         : Boolean, default false
+
+--- AuditLog.js ---
+performedBy      : ObjectId ref User
+action           : String
+targetModel      : String
+targetId         : ObjectId
+details          : String
+ipAddress        : String
+timestamp        : Date, default Date.now
+
+--- Settings.js ---
+platformName          : String, default 'EventHub'
+platformTagline       : String
+supportEmail          : String
+reminderHoursBefore   : Number, default 24
+allowPublicRegistration : Boolean, default true
+allowGuestRegistration  : Boolean, default true
+requireEmailVerification: Boolean, default false
+maxEventsPerOrganizer   : Number, default 50
+
+================================================================
+USER ROLES AND PERMISSIONS
+================================================================
+
+Feature                              | Admin | Organizer | Participant
+-------------------------------------|-------|-----------|------------
+Self-register account                |  ---  |    ---    |    YES
+Login                                |  YES  |    YES    |    YES
+Create event                         |  YES  |    YES    |     NO
+Edit own event                       |  YES  |    YES    |     NO
+Edit any event                       |  YES  |     NO    |     NO
+Cancel event                         |  YES  |    YES    |     NO
+Publish/unpublish event              |  YES  |    YES    |     NO
+Browse public events                 |  YES  |    YES    |    YES
+Register for event                   |  YES  |     NO    |    YES
+View own registrations               |  YES  |    YES    |    YES
+View all registrations (own event)   |  YES  |    YES    |     NO
+View all registrations (all events)  |  YES  |     NO    |     NO
+Mark attendance                      |  YES  |    YES    |     NO
+Export participant list              |  YES  |    YES    |     NO
+Send bulk email to registrants       |  YES  |    YES    |     NO
+Cancel own registration              |  YES  |     NO    |    YES
+Download own ticket PDF              |  YES  |     NO    |    YES
+Manage categories                    |  YES  |     NO    |     NO
+Manage system users                  |  YES  |     NO    |     NO
+View system-wide reports             |  YES  |     NO    |     NO
+View own event reports               |  YES  |    YES    |     NO
+View audit logs                      |  YES  |     NO    |     NO
+Manage system settings               |  YES  |     NO    |     NO
+
+================================================================
+BACKEND API ROUTES
+================================================================
+
+AUTH — /api/auth
+  POST  /register         Participant self-registration
+  POST  /login            Login (all roles), returns JWT
+  POST  /logout           Client-side token clear
+  POST  /forgot-password  Send password reset email
+  POST  /reset-password/:token  Reset password
+  GET   /verify-email/:token    Verify email (optional)
+  GET   /me               Get current user profile
+
+CATEGORIES — /api/categories
+  POST  /               Create (Admin only)
+  GET   /               All categories (public)
+  PUT   /:id            Update (Admin only)
+  DELETE /:id           Delete if no events (Admin only)
+
+EVENTS — /api/events
+  POST  /               Create event (Admin, Organizer)
+  GET   /               Public event listing (paginated, searchable,
+                        filterable — only Published events for guests)
+  GET   /my-events      Organizer's own events (all statuses)
+  GET   /admin/all      All events, all statuses (Admin only)
+  GET   /:id            Single event full details (public)
+  PUT   /:id            Update event (owner or Admin)
+  POST  /:id/publish    Publish event (owner or Admin)
+  POST  /:id/cancel     Cancel event with reason (owner or Admin)
+  POST  /:id/complete   Mark event as completed (owner or Admin)
+  POST  /:id/banner     Upload banner image (Multer)
+  DELETE /:id           Soft delete — Admin only
+
+REGISTRATIONS — /api/registrations
+  POST  /               Register for an event (Participant, Admin)
+  GET   /               All registrations — Admin only (paginated)
+  GET   /event/:eventId All registrations for an event (owner/Admin)
+  GET   /my             Current user's registrations (Participant)
+  GET   /:id            Single registration details
+  POST  /:id/cancel     Cancel registration (owner or Admin)
+  POST  /:id/attendance Mark attendance (Organizer, Admin)
+  POST  /event/:eventId/bulk-attendance  Mark multiple at once
+  POST  /event/:eventId/send-bulk-email  Send email to all registrants
+  GET   /:id/ticket     Get ticket PDF download
+  GET   /event/:eventId/export  Export participant list as PDF or CSV
+
+WAITLIST — /api/waitlist
+  POST  /event/:eventId  Join waitlist for a full event
+  GET   /event/:eventId  Get waitlist for event (Organizer/Admin)
+  DELETE /:id            Remove from waitlist
+
+USERS — /api/users (Admin only)
+  POST  /               Create staff/organizer user
+  GET   /               All users (paginated)
+  GET   /:id            Single user
+  PUT   /:id            Update user / toggle active
+  DELETE /:id           Deactivate
+
+REPORTS — /api/reports
+  GET   /summary               System summary (Admin)
+  GET   /event/:eventId/summary  Event-level summary (owner/Admin)
+  GET   /registrations-by-month Monthly trend (Admin)
+  GET   /events-by-category     Category breakdown (Admin)
+  GET   /top-events             Most registered events (Admin)
+  GET   /export/event/:eventId  Export event report PDF (owner/Admin)
+  GET   /export/overview        Export system overview PDF (Admin)
+
+AUDIT — /api/audit (Admin only)
+  GET   /               Paginated audit log
+
+SETTINGS — /api/settings
+  GET   /               Get settings (all roles)
+  PUT   /               Update settings (Admin only)
+
+================================================================
+FRONTEND PAGES AND FEATURES
+================================================================
+
+--- PUBLIC / AUTH PAGES ---
+
+1. LOGIN PAGE (/login)
+   AuthLayout wrapper (gradient background, centered card)
+   Platform logo + tagline at top
+   Email + password form (react-hook-form)
+   Show/hide password toggle
+   "Don't have an account? Register" link → /register
+   "Forgot Password?" link
+   On success: redirect based on role
+     Admin → /admin/dashboard
+     Organizer → /organizer/dashboard
+     Participant → /participant/dashboard
+
+2. REGISTER PAGE (/register) — Participants only
+   AuthLayout wrapper
+   Fields: Full Name*, Email*, Phone*, Password*, Confirm Password*
+   Password strength indicator (weak/medium/strong)
+   Terms checkbox
+   On success: auto-login + redirect to /participant/dashboard
+   "Already have an account? Login" link
+
+3. FORGOT PASSWORD / RESET PASSWORD
+   Standard email entry → reset link
+   Reset page: new + confirm password with match validation
+
+--- ADMIN PAGES ---
+
+4. ADMIN DASHBOARD (/admin/dashboard)
+   Metric cards (6):
+     Total Events | Total Registrations | Active Events Today |
+     Total Participants | Upcoming Events | Total Organizers
+   Alert: if any events have 0 registrations (amber)
+   Charts:
+     Bar chart — Registrations per month (last 12 months)
+     Pie chart — Events by category
+     Bar chart — Top 5 most registered events
+   Recent registrations table (last 10)
+   Recent events created (last 5)
+   Quick actions: Create Event, Add User, View Reports
+
+5. ADMIN — ALL EVENTS (/admin/events)
+   Table: Event Code, Banner thumbnail, Title, Organizer, Category,
+   Date, Registrations/Capacity, Status badge, Actions
+   Filter: Status (All/Draft/Published/Cancelled/Completed),
+   Category, Date range, Event Type
+   Search by title, event code, organizer name
+   Actions: View, Edit, Cancel, Delete
+   Export event list PDF
+
+6. ADMIN — ALL REGISTRATIONS (/admin/registrations)
+   Table: Reg Code, Participant, Event, Date, Status badge,
+   Attendance badge, Actions
+   Filter: Status, Attendance, Date range, Event
+   Search: participant name, email, reg code
+   Pagination
+
+7. ADMIN — USER MANAGEMENT (/admin/users)
+   Table: Name, Role badge, Email, Phone, Org/Dept,
+   Status badge, Created, Actions
+   Add User modal (for organizer + admin accounts)
+   Edit user, toggle active
+   Filter by role, status
+
+8. ADMIN — REPORTS (/admin/reports)
+   Summary metrics
+   All 4 charts in full view
+   Export buttons: System Overview PDF, Registration Report PDF
+   Date range filter
+
+9. ADMIN — AUDIT LOGS (/admin/audit-logs)
+   Table: User, Action, Target, Details, IP, Timestamp
+   Filter: User, Action, Date range | Pagination
+
+10. ADMIN — SETTINGS (/admin/settings)
+    Platform Name, Tagline, Support Email
+    Reminder Hours Before Event (default 24)
+    Allow Public Registration toggle
+    Allow Guest Registration toggle
+    Require Email Verification toggle
+    Max Events Per Organizer
+
+--- ORGANIZER PAGES ---
+
+11. ORGANIZER DASHBOARD (/organizer/dashboard)
+    Metric cards (4):
+      My Total Events | Total Registrations | Upcoming Events | Avg Attendance %
+    Alert if any event is filling up (>80% capacity) — amber banner
+    My Events cards (upcoming — max 3) with quick links
+    Recent registrations on my events (last 5)
+    Quick actions: Create Event, View My Events, Mark Attendance
+
+12. MY EVENTS (/organizer/events)
+    Grid of event cards (EventCard component):
+      Banner, Event Code, Title, Date, Location,
+      Registrations / Capacity bar, Status badge
+    Filter: Status, Category, Date range
+    Search by title
+    Buttons per card: View, Edit, Registrations, Mark Attendance
+    "Create New Event" button top right
+    Pagination
+
+13. CREATE EVENT (/organizer/events/new)
+    Multi-step form (4 steps with step indicator):
+
+    Step 1 — Basic Info:
+      Event Title*, Category* (dropdown), Event Type* (Physical/Virtual/Hybrid),
+      Short Description*, Full Description (rich textarea),
+      Tags (comma-separated)
+
+    Step 2 — Date, Time & Location:
+      Start Date*, End Date*, Start Time*, End Time*,
+      Registration Deadline*,
+      Location* (text — address for physical, meeting link for virtual),
+      Virtual Link (if Hybrid)
+
+    Step 3 — Capacity & Pricing:
+      Maximum Capacity*,
+      Is Free? (toggle),
+      Ticket Price (NGN) — shown only if not free,
+      Allow Waitlist (toggle),
+      Custom Registration Fields (dynamic — add field name, type, required toggle)
+
+    Step 4 — Banner & Review:
+      Banner Image upload (preview thumbnail)
+      Full summary of all entered data
+      "Save as Draft" and "Publish Now" buttons
+
+    On save: create event, if "Publish Now" → auto-publish
+    On success: redirect to /organizer/events/:id
+
+14. EDIT EVENT (/organizer/events/:id/edit)
+    Pre-filled same 4-step form
+    If event has registrations: warn "Editing may affect registered participants"
+    Cannot reduce maxCapacity below currentRegistrations
+    Save Changes + Cancel Event button (bottom, red)
+    Cancel Event → ConfirmDialog with reason textarea
+    On cancel: set status=Cancelled, send cancellation emails to all registrants
+
+15. EVENT DETAIL — ORGANIZER (/organizer/events/:id)
+    Banner image header (full width)
+    Event details: title, category, type, date/time, location, status badge
+    Stats row: Total Registered / Capacity, Confirmed, Waitlisted, Attended
+    Capacity bar (progress bar — green→amber→red as fills up)
+    Action buttons: Edit Event, View Registrations, Mark Attendance,
+    Send Email to All, Export Participants, Cancel Event
+    Tabs:
+      Overview: full description, tags, custom fields list
+      Registrations: mini table of latest 10 registrations
+      Waitlist: if any, show waitlist count and list
+
+16. REGISTRATIONS PAGE (/organizer/events/:id/registrations)
+    Full participant table:
+      Reg Code, Ticket No, Full Name, Email, Phone, Org,
+      Registration Date, Status badge, Attendance badge, Actions
+    Search by name, email, reg code
+    Filter: Status (Confirmed/Waitlisted/Cancelled), Attendance
+    Actions per row: View Details, Mark Present, Mark Absent, Cancel
+    Bulk action: Select all → Mark Selected as Present
+    "Send Email to All Confirmed" button → opens email compose modal
+    Export: "Download PDF" + "Download CSV"
+    Pagination
+
+17. MARK ATTENDANCE (/organizer/events/:id/attendance)
+    Checklist-style page — list of all confirmed registrants:
+      Avatar initials, Full Name, Reg Code, Ticket No,
+      Toggle switch: Present / Absent (default Pending)
+    Search by name or reg code
+    Stats bar at top: X Present | X Absent | X Pending
+    "Save All Attendance" button (batch update)
+    Export Attendance Report button
+
+--- PARTICIPANT PAGES ---
+
+18. PARTICIPANT DASHBOARD (/participant/dashboard)
+    Welcome header: "Hello, [Name]!"
+    Upcoming Registered Events (cards with countdown timers):
+      Banner, Title, Date, Countdown: "Starts in X days X hours"
+      Download Ticket button
+    Stats row: Total Registered | Events Attended | Upcoming Events
+    "Browse More Events" button
+
+19. BROWSE EVENTS (/participant/events)
+    Hero search banner:
+      Search input (title, category, location)
+      Filter pills: All | Today | This Week | This Month | Free | Virtual
+    Event cards grid (3 cols desktop, 1 col mobile):
+      EventCard component: Banner, Category badge, Title, Organizer name,
+      Date + Time, Location (with icon), Capacity bar,
+      Price (Free / NGN X), Status badge, Register button
+    Status badge: Upcoming/Ongoing/Full/Cancelled
+    Register button: disabled if Full or Cancelled
+    "Join Waitlist" button if full and waitlist allowed
+    Pagination
+
+20. EVENT DETAIL — PARTICIPANT (/participant/events/:id)
+    Full-width banner image
+    Event title, organizer name, category badge
+    Date / Time / Location row (icons)
+    About section (full description)
+    Tags pills
+    Sidebar card (right): Price, Capacity (X slots left),
+    Status, Registration Deadline,
+    "Register Now" button (large, accent color)
+    If already registered: show registration card with reg code + ticket
+    If full: show "Join Waitlist" button
+    If past deadline: "Registration Closed"
+    If cancelled: "Event Cancelled" banner
+
+21. REGISTER FOR EVENT (/participant/events/:id/register)
+    Form:
+      Full Name* (pre-filled from profile), Email* (pre-filled),
+      Phone*, Organization
+      Custom Fields (dynamic — rendered from event.customFields)
+    Summary card: event title, date, price
+    "Complete Registration" button
+    On success:
+      Show confirmation card: Reg Code, Ticket Number
+      "Download Ticket PDF" button
+      Confirmation email sent in background
+
+22. MY REGISTRATIONS (/participant/registrations)
+    Table / Cards toggle view:
+      Event banner thumbnail, Title, Date, Reg Code,
+      Status badge (Confirmed/Waitlisted/Cancelled),
+      Attendance badge (Pending/Present/Absent),
+      Actions: View Ticket, Cancel Registration
+    Cancel: only if event has not started yet
+    ConfirmDialog before cancel
+    Pagination
+
+23. MY TICKET (/participant/registrations/:id/ticket)
+    Clean printable ticket layout:
+      Platform logo top right
+      Event banner (reduced)
+      EVENT TITLE large
+      Ticket Number (large, monospace font)
+      QR code placeholder (static image or qrcode library)
+      Participant Name, Email
+      Event Date, Time, Location
+      Registration Code
+      Footer: "Please present this ticket at the event entrance"
+    Download PDF button → GET /api/registrations/:id/ticket
+    Print button
+
+================================================================
+AUTOMATED SYSTEMS
+================================================================
+
+REMINDER SCHEDULER (node-cron — runs every hour: '0 * * * *')
+  For each published event where:
+    startDate is in the next (reminderHoursBefore) hours
+    AND reminder not yet sent (add reminderSent: Boolean to Event model)
+  Send reminder email to all confirmed registrants:
+    Subject: "Reminder: [Event Title] starts in 24 hours!"
+    Body: event details, location/link, ticket code, organizer contact
+  Mark event.reminderSent = true
+
+AUTO-COMPLETE (runs daily at midnight: '0 0 * * *')
+  Find all Published events where endDate < today
+  Set status = 'Completed'
+
+CAPACITY ALERTS (triggered on each new registration)
+  After each confirmed registration:
+    Calculate fill percentage = (currentRegistrations / maxCapacity) * 100
+    If fill% >= 80 AND alert not yet sent:
+      Send email to organizer: "Your event is 80% full"
+      Set event.alert80Sent = true
+    If fill% == 100:
+      Send email to organizer: "Your event is now fully booked"
+      Set event allowWaitlist check
+
+WAITLIST PROMOTION (triggered on registration cancellation)
+  When a confirmed registration is cancelled:
+    Decrement event.currentRegistrations
+    Check event.waitlist — find oldest entry (lowest position)
+    If found:
+      Create new Registration for that waitlist entry (status: Confirmed)
+      Delete from Waitlist
+      Send promotion email: "Great news! A spot opened up for [Event]"
+      Attach new ticket PDF
+      Increment event.currentRegistrations
+
+================================================================
+FINE-GRAINED BUSINESS RULES
+================================================================
+
+1.  Participant cannot register for the same event twice
+2.  Registration blocked if event status is not 'Published'
+3.  Registration blocked after registrationDeadline has passed
+4.  Registration blocked if currentRegistrations >= maxCapacity
+    AND allowWaitlist is false
+5.  If maxCapacity reached AND allowWaitlist = true:
+    put new registration on Waitlist instead
+6.  Organizers can only edit/cancel their own events
+7.  Organizer cannot register as participant for their own event
+8.  Event cannot be published without title, description,
+    category, date, time, location, and maxCapacity filled
+9.  Cancelling an event sends email to ALL confirmed + waitlisted registrants
+10. maxCapacity cannot be reduced below currentRegistrations on edit
+11. Attendance marking only allowed on/after event startDate
+12. Guest registration (no account) allowed if Settings.allowGuestRegistration
+    Guest reg stores email only — no participant ObjectId
+13. Search and filter use server-side 400ms debounced queries
+14. All dates displayed as DD/MM/YYYY HH:MM format
+15. All prices in NGN with comma separators (NGN 5,000.00)
+16. Session expiry auto-redirects to /login with toast
+17. Soft delete events — never hard delete
+18. Cancelled events remain visible with "Cancelled" badge
+
+================================================================
+EMAIL TEMPLATES
+================================================================
+
+1. REGISTRATION CONFIRMATION
+   Subject: "Registration Confirmed — [Event Title]"
+   Body: participant name, event details, reg code,
+   ticket number, date/time/location, "Add to Calendar" note
+   Attachment: PDF ticket
+
+2. EVENT REMINDER (24hrs before)
+   Subject: "Tomorrow: [Event Title] — Don't forget!"
+   Body: event title, date/time, location/virtual link,
+   ticket/reg code reminder
+
+3. WAITLIST CONFIRMATION
+   Subject: "You've been added to the waitlist — [Event Title]"
+   Body: waitlist position, event details, "We'll notify you if a spot opens"
+
+4. WAITLIST PROMOTION
+   Subject: "A spot just opened for you! — [Event Title]"
+   Body: promotion notice, new reg code, ticket attachment,
+   deadline to confirm (24 hours)
+
+5. EVENT CANCELLATION NOTICE
+   Subject: "Event Cancelled — [Event Title]"
+   Body: cancellation reason from organizer, apology,
+   refund info if paid event
+
+6. 80% CAPACITY ALERT (to organizer)
+   Subject: "[Event Title] is 80% full!"
+   Body: current count, capacity, waitlist count
+
+7. BULK EMAIL (organizer sends custom message to all registrants)
+   Subject: set by organizer
+   Body: organizer's message + event details footer
+
+8. PASSWORD RESET
+   Subject: "Reset your EventHub password"
+   Body: reset link (expires 1 hour)
+
+9. WELCOME EMAIL (on participant self-registration)
+   Subject: "Welcome to [Platform Name]!"
+   Body: name, login link, browse events CTA
+
+================================================================
+PDF GENERATION
+================================================================
+
+1. EVENT TICKET (per registration)
+   Platform logo, event banner, event title, ticket number
+   (large), participant name, email, reg code, date/time,
+   location, "Present at entrance" footer
+
+2. PARTICIPANT LIST (per event export)
+   Event header, table: Reg Code, Name, Email, Phone, Org,
+   Reg Date, Status, Attendance — total count at bottom
+
+3. ATTENDANCE REPORT (per event)
+   Event header, date generated, attendance summary table,
+   % present, total present/absent/pending
+
+4. SYSTEM OVERVIEW REPORT (Admin)
+   Total events by status, total registrations by month,
+   top 5 events, generated timestamp
+
+================================================================
+SECURITY REQUIREMENTS
+================================================================
+
+1. Passwords hashed with bcryptjs (saltRounds: 10)
+2. JWT expires in 8 hours
+3. All routes protected via authMiddleware
+4. Role-restricted routes via roleMiddleware
+5. Organizers can only modify their own events (ownership check)
+6. Every significant action writes to AuditLog
+7. Multer validates: JPEG/PNG only, max 3MB for banners
+8. CORS restricted to CLIENT_URL
+9. All .env secrets out of git (add .env to .gitignore)
+10. Guest registration emails stored but not tied to user accounts
+
+================================================================
+SEED DATA
+================================================================
+
+Users:
+  admin@events.com / Admin@1234 (Admin)
+  organizer@events.com / Org@1234 (Organizer — Org: "Tech Events NG")
+  organizer2@events.com / Org2@1234 (Organizer — Org: "Delta Edu Hub")
+  participant@events.com / Part@1234 (Participant)
+  participant2@events.com / Part2@1234 (Participant)
+
+Categories (6):
+  Technology (💻), Education (🎓), Business (💼),
+  Health & Wellness (🏥), Arts & Culture (🎨), Sports (⚽)
+
+Events (6 sample events across categories):
+  - 1 Upcoming + Published + near full capacity
+  - 1 Upcoming + Published + has waitlist entries
+  - 1 Published + ongoing today
+  - 1 Completed (past event)
+  - 1 Cancelled (with reason)
+  - 1 Draft
+
+Registrations (8 sample entries):
+  - Mix of Confirmed, Waitlisted, Cancelled
+  - Some with attendance marked (Present/Absent)
+
+================================================================
+PACKAGE DEPENDENCIES
+================================================================
+
+CLIENT (client/package.json):
+  react, react-dom, react-router-dom, axios,
+  react-hot-toast, react-hook-form, recharts,
+  react-datepicker, @heroicons/react, qrcode.react
+
+  devDependencies:
+  vite, @vitejs/plugin-react, tailwindcss, postcss, autoprefixer
+
+SERVER (server/package.json):
+  express, mongoose, bcryptjs, jsonwebtoken,
+  multer, nodemailer, dotenv, cors, pdfkit,
+  node-cron, express-async-handler, morgan
+
+  devDependencies:
+  nodemon
+
+================================================================
+DEFENSE NOTES
+================================================================
+
+Q: Why did you choose MongoDB for an event management system?
+A: Event data is highly variable — some events are physical, some
+virtual, some have custom registration fields, some have complex
+capacity rules. MongoDB's flexible document model accommodates this
+without requiring schema migrations every time a new event type is
+introduced. It also naturally stores arrays like customFields and
+tags directly on the event document.
+
+Q: How does the waitlist system work?
+A: When an event reaches maximum capacity, new registrants are
+added to a separate Waitlist collection with their details and a
+queue position. When a confirmed participant cancels, the
+controller decrements the event's registration count, queries the
+Waitlist for the oldest entry, creates a new confirmed Registration
+for them, deletes the Waitlist entry, and triggers a promotional
+email with their new ticket attached. This is handled automatically
+without organizer intervention.
+
+Q: How do automated reminder emails work?
+A: A node-cron job runs every hour and queries the database for
+published events whose startDate falls within the next
+(reminderHoursBefore) hours — a value configurable in Settings.
+For each such event not yet sent a reminder, it fetches all confirmed
+registrations and dispatches individual reminder emails via
+Nodemailer. A reminderSent flag on the event document prevents
+duplicate sends.
+
+Q: What is role-based access control and how is it used here?
+A: Three roles exist: Admin, Organizer, Participant. The JWT payload
+carries the user's role. Every protected backend route passes through
+roleMiddleware which checks req.user.role. Additionally, for
+event-modification routes, ownership middleware checks that
+req.user._id matches the event's organizer field. On the frontend,
+RoleRoute components and sidebar items are conditionally rendered by
+role from AuthContext.
+
+Q: How do you prevent a participant from registering for the same
+event twice?
+A: Before creating a registration, the controller queries the
+Registration collection for an existing document where both
+event = eventId AND email = submitted email (for guest registrations)
+OR participant = req.user._id (for logged-in users). If found and
+status is not Cancelled, a 409 Conflict error is returned:
+"You are already registered for this event."
+
+Q: How does the capacity bar work on event cards?
+A: The frontend calculates fill percentage as
+(currentRegistrations / maxCapacity) * 100. A Tailwind-styled
+progress bar reflects this, changing color: green below 60%,
+amber from 60-89%, red at 90%+. This percentage is also shown as
+text (e.g. "45/100 slots filled") so users can see availability
+at a glance.
+
+Q: What happens when an event is cancelled by the organizer?
+A: The organizer provides a cancellation reason in a ConfirmDialog.
+The backend sets event.status = 'Cancelled' and stores the reason.
+Then it queries all Registration documents for this event where
+status = 'Confirmed' or 'Waitlisted', collects their emails, and
+dispatches cancellation notice emails including the organizer's
+reason. It also marks the event.currentRegistrations unchanged
+for historical accuracy and logs an AuditLog entry.
+
+Q: Why did you add a Guest Registration option?
+A: Not all event participants will want to create a system account,
+especially for one-off events. Guest registration allows anyone to
+register by email without creating a profile, reducing friction and
+increasing event participation rates. This is toggled in Settings
+so the admin can disable it for platforms requiring verified accounts.
+
+Q: How does the custom fields feature work?
+A: Organizers can define additional registration form fields per event
+by adding entries to the event's customFields array (field name, type,
+required flag). When a participant opens the registration form,
+the frontend dynamically renders these extra fields. Submitted values
+are stored in the registration's customFieldValues array as
+key-value pairs. This makes the system flexible for any event type
+without hardcoded form fields.
+
+Q: What was the most challenging part of this project?
+A: The most complex part was the waitlist promotion flow, because it
+requires atomic operations — decrementing registration count,
+promoting the waitlisted entry, creating a new registration, and
+sending the email — all as a single consistent operation. I handled
+this using Mongoose transactions to ensure that if any step fails,
+the entire operation rolls back, preventing inconsistent states like
+a participant being deleted from the waitlist but not receiving
+their confirmation email.
+
+================================================================
+END OF MASTER PROMPT + DOCUMENTATION
+Design and Implementation of an Automated Online Event Registration
+and Management System
+Academic Final Year Project — Delta State Polytechnic, Otefe-Oghara
+================================================================
