@@ -9,11 +9,26 @@ const isPublicPath = (path) => {
 };
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 15000,
 });
+
+axiosInstance.interceptors.response.use(
+  (response) => {
+    const ct = response.headers?.['content-type'] || '';
+    if (!ct.includes('application/json')) {
+      return Promise.reject(new Error(
+        `Expected JSON from ${response.config?.url} but got "${ct || 'unknown'}". ` +
+        `Check that VITE_API_URL points to your backend.`
+      ));
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
 
 // Request interceptor - attach token
 axiosInstance.interceptors.request.use(

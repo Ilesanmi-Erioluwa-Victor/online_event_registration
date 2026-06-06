@@ -74,12 +74,14 @@ const Landing = () => {
             publicAPI.getOrganizers({ limit: 8 }),
           ]);
 
-        setStats(statsRes.data);
-        setUpcomingEvents(upcomingRes.data.events);
-        setPastEvents(pastRes.data.events);
-        setOrganizers(organizersRes.data.organizers);
+        setStats(statsRes?.data ?? null);
+        setUpcomingEvents(Array.isArray(upcomingRes?.data?.events) ? upcomingRes.data.events : []);
+        setPastEvents(Array.isArray(pastRes?.data?.events) ? pastRes.data.events : []);
+        setOrganizers(Array.isArray(organizersRes?.data?.organizers) ? organizersRes.data.organizers : []);
       } catch (err) {
-        toast.error('Failed to load landing page');
+        toast.error(err?.message?.includes('Expected JSON')
+          ? 'Backend not reachable. Set VITE_API_URL in Vercel env vars.'
+          : 'Failed to load landing page');
         console.error(err);
       } finally {
         setLoading(false);
